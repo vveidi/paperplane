@@ -48,21 +48,28 @@ struct SMTPMessageBuilder {
 }
 
 enum SendBookCommandError: LocalizedError {
-    case failedToStart(error: Error)
-    case invalidData
-    case invalidMailAddress
-    case terminated(code: Int, description: String)
+    case processFailedToStart(error: Error)
+    case bookFileReadFailed(error: Error)
+    case invalidEmailAddress
+    case messageEncodingFailed
+    case processTerminated(code: Int, description: String)
     
     var errorDescription: String? {
         switch self {
-        case .failedToStart(let error):
-            "msmtp process failed to start: \(error)"
-        case .invalidData:
-            "Invalid data for message"
-        case .invalidMailAddress:
-            "Invalid sender or receiver address"
-        case .terminated(let code, let description):
-            "msmtp terminated with code \(code): \(description)"
+        case .processFailedToStart(let error):
+            return "Failed to launch msmtp process: \(error.localizedDescription)"
+        case .bookFileReadFailed(let error):
+            return "Failed to read file for attachment: \(error.localizedDescription)"
+        case .invalidEmailAddress:
+            return "Invalid sender or receiver email address. Please check both addresses."
+        case .messageEncodingFailed:
+            return "Failed to encode MIME message. There may be a problem with the message content."
+        case .processTerminated(let code, let description):
+            if !description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "msmtp exited with code \(code). stderr: \(description)"
+            } else {
+                return "msmtp exited with code \(code) and no error output."
+            }
         }
     }
 }
@@ -81,7 +88,7 @@ struct SendBook: ParsableCommand {
     func validate() throws(SendBookCommandError) {
         guard !sender.isEmpty, sender.contains("@"),
               !receiver.isEmpty, receiver.contains("@") else {
-            throw .invalidMailAddress
+            throw .invalidEmailAddress
         }
     }
     
@@ -97,7 +104,7 @@ struct SendBook: ParsableCommand {
         do {
           return try Data(contentsOf: url)
         } catch {
-            throw .invalidData
+            throw .bookFileReadFailed(error: error)
         }
     }
     
@@ -138,7 +145,7 @@ struct SendBook: ParsableCommand {
     
     private func sendMessage(_ message: String) throws(SendBookCommandError) {
         guard let messageData = message.data(using: .utf8) else {
-            throw .invalidData
+            throw .messageEncodingFailed
         }
         let process = Process()
         let inputPipe = Pipe()
@@ -153,14 +160,14 @@ struct SendBook: ParsableCommand {
             try inputPipe.fileHandleForWriting.write(contentsOf: messageData)
             try inputPipe.fileHandleForWriting.close()
         } catch {
-            throw .failedToStart(error: error)
+            throw .processFailedToStart(error: error)
         }
         process.waitUntilExit()
         
         let stderr = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         
         if process.terminationStatus != 0 || !stderr.isEmpty {
-            throw SendBookCommandError.terminated(code: Int(process.terminationStatus), description: stderr)
+            throw SendBookCommandError.processTerminated(code: Int(process.terminationStatus), description: stderr)
         }
     }
 }
