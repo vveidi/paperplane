@@ -9,13 +9,20 @@ import ArgumentParser
 import Foundation
 import UniformTypeIdentifiers
 
+// TODO: Show errors if VPN is enabled
+// TODO: Send only permitted book formats
+// TODO: Send several books or a folder (if folder, then delete/replace uploaded files)
+// TODO: Save config for sending books (somehow)
+// TODO: Escape and encode attachment title (e.g. RFC 2047) if it contains non-ASCII or special characters
+// TODO: Remove msmtp dependency
+// TODO: Add command parameters validation
+
 struct BookAttachment {
     let title: String
     let data: String
     let mimeType: String
     
     init(title: String, data: Data) {
-        // TODO: Escape and encode attachment title (e.g. RFC 2047) if it contains non-ASCII or special characters
         self.title = title
         self.data = data.base64EncodedString(options: [.lineLength76Characters])
         self.mimeType = BookAttachment.mimeType(for: title)
