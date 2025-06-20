@@ -1,11 +1,12 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
-
-import Darwin
+import ArgumentParser
 
 @main
-struct Paperplane {
-    static func main() {
-        SendBook.main()
+struct Paperplane: ParsableCommand {
+    static var configuration: CommandConfiguration {
+        CommandConfiguration(
+            abstract: "Утилита для работы с книгами",
+            subcommands: [SendBook.self],
+            defaultSubcommand: SendBook.self
+        )
     }
 }
