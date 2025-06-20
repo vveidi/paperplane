@@ -7,7 +7,6 @@
 
 import ArgumentParser
 import Foundation
-import UniformTypeIdentifiers
 
 // TODO: Show errors if VPN is enabled
 // TODO: Send only permitted book formats
