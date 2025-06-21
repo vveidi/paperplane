@@ -13,6 +13,7 @@ enum SendBookCommandError: LocalizedError {
     case invalidEmailAddress
     case messageEncodingFailed
     case processTerminated(code: Int, description: String)
+    case unsupportedBookFileFormat
     
     var errorDescription: String? {
         switch self {
@@ -30,6 +31,9 @@ enum SendBookCommandError: LocalizedError {
             } else {
                 return "msmtp exited with code \(code) and no error output."
             }
+        case .unsupportedBookFileFormat:
+            let supportedFormats = BookAttachment.allowedExtensions.joined(separator: ", ")
+            return "Unsupported book file format. Please, use one of the supported formats: \(supportedFormats)."
         }
     }
 }

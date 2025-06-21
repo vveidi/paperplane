@@ -13,11 +13,18 @@ struct BookAttachment {
     let data: String
     let mimeType: String
     
-    init(title: String, data: Data) {
-        self.title = title
+    init(fileURL: URL, data: Data) throws(SendBookCommandError) {
+        guard BookAttachment.allowedExtensions.contains(fileURL.pathExtension.lowercased()) else {
+            throw .unsupportedBookFileFormat
+        }
+        self.title = fileURL.lastPathComponent
         self.data = data.base64EncodedString(options: [.lineLength76Characters])
-        self.mimeType = BookAttachment.mimeType(for: title)
+        self.mimeType = BookAttachment.mimeType(for: fileURL.lastPathComponent)
     }
+    
+    static let allowedExtensions: Set<String> = [
+        "mobi", "azw", "azw3", "epub", "pdf", "txt", "rtf", "doc", "docx", "html", "htm"
+    ]
     
     private static func mimeType(for filename: String) -> String {
         let ext = URL(fileURLWithPath: filename).pathExtension

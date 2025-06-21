@@ -9,14 +9,13 @@ import ArgumentParser
 import Foundation
 
 // TODO: Show errors if VPN is enabled
-// TODO: Send only permitted book formats
 // TODO: Send several books or a folder (if folder, then delete/replace uploaded files)
 // TODO: Save config for sending books (somehow)
 // TODO: Escape and encode attachment title (e.g. RFC 2047) if it contains non-ASCII or special characters
 // TODO: Remove msmtp dependency
 // TODO: Add command parameters validation
 
-struct SendBook: ParsableCommand {
+struct SendBookCommand: ParsableCommand {
     
     @Option(name: .shortAndLong, help: "Email address of the sender")
     var sender: String
@@ -37,7 +36,7 @@ struct SendBook: ParsableCommand {
     func run() throws(SendBookCommandError) {
         let bookURL = URL(fileURLWithPath: file)
         let bookData = try parsedData(from: bookURL)
-        let attachment = BookAttachment(title: bookURL.lastPathComponent, data: bookData)
+        let attachment = try BookAttachment(fileURL: bookURL, data: bookData)
         let message = buildMessage(with: attachment)
         try sendMessage(message)
     }
