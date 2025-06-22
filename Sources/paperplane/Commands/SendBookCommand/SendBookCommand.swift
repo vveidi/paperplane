@@ -23,8 +23,8 @@ struct SendBookCommand: ParsableCommand {
     @Option(name: .shortAndLong, help: "Email address of the receiver")
     var receiver: String
     
-    @Option(name: .shortAndLong, help: "Path to the book file")
-    var file: String
+    @Option(name: .shortAndLong, help: "Path to the book file or the folder")
+    var path: String
     
     func validate() throws(SendBookCommandError) {
         guard !sender.isEmpty, sender.contains("@"),
@@ -34,11 +34,31 @@ struct SendBookCommand: ParsableCommand {
     }
     
     func run() throws(SendBookCommandError) {
-        let bookURL = URL(fileURLWithPath: file)
-        let bookData = try parsedData(from: bookURL)
-        let attachment = try BookAttachment(fileURL: bookURL, data: bookData)
-        let message = buildMessage(with: attachment)
+        let bookURL = URL(fileURLWithPath: path)
+        let attachments = try createAttachments(path: bookURL)
+        let message = buildMessage(with: attachments)
         try sendMessage(message)
+    }
+    
+    private func createAttachments(path: URL) throws (SendBookCommandError) -> [BookAttachment] {
+        return try generateFileURLs(for: path).map(createAttachment(for:))
+    }
+    
+    private func generateFileURLs(for path: URL) -> [URL] {
+        if path.hasDirectoryPath, let contents = try? FileManager.default.contentsOfDirectory(
+            at: path,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) {
+            return contents
+        } else {
+            return [path]
+        }
+    }
+    
+    private func createAttachment(for path: URL) throws(SendBookCommandError) -> BookAttachment {
+        let data = try parsedData(from: path)
+        return try BookAttachment(fileURL: path, data: data)
     }
     
     private func parsedData(from url: URL) throws(SendBookCommandError) -> Data {
@@ -49,7 +69,7 @@ struct SendBookCommand: ParsableCommand {
         }
     }
     
-    private func buildMessage(with attachment: BookAttachment) -> String {
+    private func buildMessage(with attachments: [BookAttachment]) -> String {
         var builder = SMTPMessageBuilder()
         let boundary = UUID().uuidString
         let dateFormatter = DateFormatter()
@@ -71,13 +91,15 @@ struct SendBookCommand: ParsableCommand {
         builder.add("This email was sent via Swift.")
         builder.addEmptyLine()
         
-        builder.add("--\(boundary)")
-        builder.add("Content-Type: \(attachment.mimeType); name=\"\(attachment.title)\"")
-        builder.add("Content-Disposition: attachment; filename=\"\(attachment.title)\"")
-        builder.add("Content-Transfer-Encoding: base64")
-        builder.addEmptyLine()
-        builder.add(attachment.data)
-        builder.addEmptyLine()
+        attachments.forEach { attachment in
+            builder.add("--\(boundary)")
+            builder.add("Content-Type: \(attachment.mimeType); name=\"\(attachment.title)\"")
+            builder.add("Content-Disposition: attachment; filename=\"\(attachment.title)\"")
+            builder.add("Content-Transfer-Encoding: base64")
+            builder.addEmptyLine()
+            builder.add(attachment.data)
+            builder.addEmptyLine()
+        }
         
         builder.add("--\(boundary)--")
         
