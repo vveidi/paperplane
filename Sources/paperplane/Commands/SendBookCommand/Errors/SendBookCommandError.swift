@@ -14,6 +14,8 @@ enum SendBookCommandError: LocalizedError {
     case messageEncodingFailed
     case processTerminated(code: Int, description: String)
     case unsupportedBookFileFormat
+    case exceededMaxAttachmentSize
+    case exceededMaxAttachmentCount
     
     var errorDescription: String? {
         switch self {
@@ -34,6 +36,10 @@ enum SendBookCommandError: LocalizedError {
         case .unsupportedBookFileFormat:
             let supportedFormats = BookAttachment.allowedExtensions.joined(separator: ", ")
             return "Unsupported book file format. Please, use one of the supported formats: \(supportedFormats)."
+        case .exceededMaxAttachmentSize:
+            return "Exceeded maximum attachment size limit: \(BookAttachment.maximumAttachmentsSize)MB"
+        case .exceededMaxAttachmentCount:
+            return "Exceeded maximum attachment count limit: \(BookAttachment.maximumAttachmentsCount) attachments"
         }
     }
 }

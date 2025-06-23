@@ -9,7 +9,6 @@ import ArgumentParser
 import Foundation
 
 // TODO: Show errors if VPN is enabled
-// TODO: Send several books or a folder (if folder, then delete/replace uploaded files)
 // TODO: Save config for sending books (somehow)
 // TODO: Escape and encode attachment title (e.g. RFC 2047) if it contains non-ASCII or special characters
 // TODO: Remove msmtp dependency
@@ -41,7 +40,19 @@ struct SendBookCommand: ParsableCommand {
     }
     
     private func createAttachments(path: URL) throws (SendBookCommandError) -> [BookAttachment] {
-        return try generateFileURLs(for: path).map(createAttachment(for:))
+        let attachments = try generateFileURLs(for: path).map { (fileURL) throws(SendBookCommandError) in
+            return try BookAttachment(fileURL: fileURL)
+        }
+        guard attachments.count <= BookAttachment.maximumAttachmentsCount else {
+            throw .exceededMaxAttachmentCount
+        }
+        let base64Length = attachments.reduce(into: 0) { partialResult, attachment in
+            partialResult += ((attachment.data.count + 2) / 3) * 4
+        }
+        guard base64Length <= BookAttachment.maximumAttachmentsSize else {
+            throw .exceededMaxAttachmentSize
+        }
+        return attachments
     }
     
     private func generateFileURLs(for path: URL) -> [URL] {
@@ -53,19 +64,6 @@ struct SendBookCommand: ParsableCommand {
             return contents
         } else {
             return [path]
-        }
-    }
-    
-    private func createAttachment(for path: URL) throws(SendBookCommandError) -> BookAttachment {
-        let data = try parsedData(from: path)
-        return try BookAttachment(fileURL: path, data: data)
-    }
-    
-    private func parsedData(from url: URL) throws(SendBookCommandError) -> Data {
-        do {
-          return try Data(contentsOf: url)
-        } catch {
-            throw .bookFileReadFailed(error: error)
         }
     }
     
