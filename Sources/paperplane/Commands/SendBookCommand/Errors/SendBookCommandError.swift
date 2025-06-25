@@ -16,6 +16,8 @@ enum SendBookCommandError: LocalizedError {
     case unsupportedBookFileFormat
     case exceededMaxAttachmentSize
     case exceededMaxAttachmentCount
+    case configNotFound(error: Error)
+    case parameterValidationFailed
     
     var errorDescription: String? {
         switch self {
@@ -40,6 +42,10 @@ enum SendBookCommandError: LocalizedError {
             return "Exceeded maximum attachment size limit: \(BookAttachment.maximumAttachmentsSize)MB"
         case .exceededMaxAttachmentCount:
             return "Exceeded maximum attachment count limit: \(BookAttachment.maximumAttachmentsCount) attachments"
+        case .configNotFound(let error):
+            return "Failed to read config file: \(error.localizedDescription)"
+        case .parameterValidationFailed:
+            return "Validation failed. Please check all parameters."
         }
     }
 }

@@ -17,26 +17,31 @@ import Foundation
 struct SendBookCommand: ParsableCommand {
     
     @Option(name: .shortAndLong, help: "Email address of the sender")
-    var sender: String
+    var sender: String?
     
     @Option(name: .shortAndLong, help: "Email address of the receiver")
-    var receiver: String
+    var receiver: String?
     
     @Option(name: .shortAndLong, help: "Path to the book file or the folder")
-    var path: String
-    
-    func validate() throws(SendBookCommandError) {
-        guard !sender.isEmpty, sender.contains("@"),
-              !receiver.isEmpty, receiver.contains("@") else {
-            throw .invalidEmailAddress
-        }
-    }
+    var path: String?
     
     func run() throws(SendBookCommandError) {
-        let bookURL = URL(fileURLWithPath: path)
+        let configuration = try createConfiguration()
+        let bookURL = URL(fileURLWithPath: configuration.path)
         let attachments = try createAttachments(path: bookURL)
-        let message = buildMessage(with: attachments)
-        try sendMessage(message)
+        let message = buildMessage(with: attachments, from: configuration.sender, to: configuration.receiver)
+        try sendMessage(message, to: configuration.receiver)
+        SendBookConfigManager.save(configuration)
+    }
+    
+    private func createConfiguration() throws(SendBookCommandError) -> SendBookConfig {
+        let configuration = SendBookConfigManager.load()
+        guard let sender = sender ?? configuration?.sender,
+              let receiver = receiver ?? configuration?.receiver,
+              let path = path ?? configuration?.path else {
+            throw .parameterValidationFailed
+        }
+        return SendBookConfig(sender: sender, receiver: receiver, path: path)
     }
     
     private func createAttachments(path: URL) throws (SendBookCommandError) -> [BookAttachment] {
@@ -67,7 +72,7 @@ struct SendBookCommand: ParsableCommand {
         }
     }
     
-    private func buildMessage(with attachments: [BookAttachment]) -> String {
+    private func buildMessage(with attachments: [BookAttachment], from sender: String, to receiver: String) -> String {
         var builder = SMTPMessageBuilder()
         let boundary = UUID().uuidString
         let dateFormatter = DateFormatter()
@@ -104,7 +109,7 @@ struct SendBookCommand: ParsableCommand {
         return builder.build()
     }
     
-    private func sendMessage(_ message: String) throws(SendBookCommandError) {
+    private func sendMessage(_ message: String, to receiver: String) throws(SendBookCommandError) {
         guard let messageData = message.data(using: .utf8) else {
             throw .messageEncodingFailed
         }
