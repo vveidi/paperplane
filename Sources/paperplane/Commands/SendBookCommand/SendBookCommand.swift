@@ -27,18 +27,18 @@ struct SendBookCommand: ParsableCommand {
     
     func run() throws(SendBookCommandError) {
         let configuration = try createConfiguration()
-        let bookURL = URL(fileURLWithPath: configuration.path)
-        let attachments = try createAttachments(path: bookURL)
+        let attachments = try createAttachments(path: configuration.fileURL)
         let message = buildMessage(with: attachments, from: configuration.sender, to: configuration.receiver)
         try sendMessage(message, to: configuration.receiver)
         SendBookConfigManager.save(configuration)
+        print("✈️ The mail has been sent successfully")
     }
     
     private func createConfiguration() throws(SendBookCommandError) -> SendBookConfig {
         let configuration = SendBookConfigManager.load()
         guard let sender = sender ?? configuration?.sender,
               let receiver = receiver ?? configuration?.receiver,
-              let path = path ?? configuration?.path else {
+              let path = path ?? configuration?.fileURL.path else {
             throw .parameterValidationFailed
         }
         return SendBookConfig(sender: sender, receiver: receiver, path: path)
