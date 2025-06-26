@@ -37,7 +37,7 @@ enum SendBookCommandError: LocalizedError {
         case .processFailedToStart(let error):
             return "Failed to start msmtp process: \(error.localizedDescription)"
         case .unsupportedBookFileFormat:
-            let supportedFormats = BookAttachment.allowedExtensions.joined(separator: ", ")
+            let supportedFormats = BookAttachment.supportedFileTypes.joined(separator: ", ")
             return "Failed: Unsupported book file format. Please, use one of the supported formats: \(supportedFormats)."
         case .exceededMaxAttachmentSize:
             return "Failed: exceeded maximum attachment size limit: \(BookAttachment.maximumAttachmentsSize)MB"

@@ -15,7 +15,7 @@ struct BookAttachment {
     let fileURL: URL
     
     init(fileURL: URL) throws(SendBookCommandError) {
-        guard BookAttachment.allowedExtensions.contains(fileURL.pathExtension.lowercased()) else {
+        guard BookAttachment.supportedFileTypes.contains(fileURL.pathExtension.lowercased()) else {
             throw .unsupportedBookFileFormat
         }
         self.fileURL = fileURL
@@ -24,8 +24,8 @@ struct BookAttachment {
         self.mimeType = BookAttachment.mimeType(for: fileURL.lastPathComponent)
     }
     
-    static let allowedExtensions: Set<String> = [
-        "mobi", "azw", "azw3", "epub", "pdf", "txt", "rtf", "doc", "docx", "html", "htm"
+    static let supportedFileTypes: Set<String> = [
+        "pdf", "doc", "docx", "txt", "rtf", "htm", "html", "png", "gif", "jpg", "jpeg", "bmp", "epub"
     ]
     
     static let maximumAttachmentsSize = 50 * 1024 * 1024
