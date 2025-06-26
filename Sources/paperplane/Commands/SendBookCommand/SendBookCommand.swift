@@ -9,7 +9,6 @@ import ArgumentParser
 import Foundation
 
 // TODO: Remove msmtp dependency
-// TODO: Add command parameters validation
 
 struct SendBookCommand: ParsableCommand {
     
@@ -42,6 +41,14 @@ struct SendBookCommand: ParsableCommand {
         guard let sender = sender ?? configuration?.sender,
               let receiver = receiver ?? configuration?.receiver,
               let path = path ?? configuration?.fileURL.path else {
+            throw .parameterValidationFailed
+        }
+        guard !sender.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, sender.contains("@"),
+              !receiver.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, receiver.contains("@") else {
+            throw .invalidEmailAddress
+        }
+        guard !path.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              FileManager.default.fileExists(atPath: path) else {
             throw .parameterValidationFailed
         }
         return SendBookConfig(sender: sender, receiver: receiver, path: path)
