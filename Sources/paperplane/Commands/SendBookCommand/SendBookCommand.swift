@@ -9,7 +9,6 @@ import ArgumentParser
 import Foundation
 
 // TODO: Show errors if VPN is enabled
-// TODO: Save config for sending books (somehow)
 // TODO: Escape and encode attachment title (e.g. RFC 2047) if it contains non-ASCII or special characters
 // TODO: Remove msmtp dependency
 // TODO: Add command parameters validation
@@ -25,13 +24,19 @@ struct SendBookCommand: ParsableCommand {
     @Option(name: .shortAndLong, help: "Path to the book file or the folder")
     var path: String?
     
+    @Flag(help: "Remove file or folder after sending")
+    var removeAfterSend: Bool = false
+    
     func run() throws(SendBookCommandError) {
         let configuration = try createConfiguration()
         let attachments = try createAttachments(path: configuration.fileURL)
         let message = buildMessage(with: attachments, from: configuration.sender, to: configuration.receiver)
         try sendMessage(message, to: configuration.receiver)
-        SendBookConfigManager.save(configuration)
         print("✈️ The mail has been sent successfully")
+        SendBookConfigManager.save(configuration)
+        if removeAfterSend {
+            try removeAttachmentsAfterSend(attachments)
+        }
     }
     
     private func createConfiguration() throws(SendBookCommandError) -> SendBookConfig {
@@ -134,6 +139,16 @@ struct SendBookCommand: ParsableCommand {
         
         if process.terminationStatus != 0 || !stderr.isEmpty {
             throw SendBookCommandError.processTerminated(code: Int(process.terminationStatus), description: stderr)
+        }
+    }
+    
+    private func removeAttachmentsAfterSend(_ attachments: [BookAttachment]) throws(SendBookCommandError) {
+        do {
+            try attachments.forEach { attachment in
+                try FileManager.default.removeItem(at: attachment.fileURL)
+            }
+        } catch {
+            throw .fileRemovalFailed(error: error)
         }
     }
 }

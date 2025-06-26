@@ -12,11 +12,13 @@ struct BookAttachment {
     let title: String
     let data: String
     let mimeType: String
+    let fileURL: URL
     
     init(fileURL: URL) throws(SendBookCommandError) {
         guard BookAttachment.allowedExtensions.contains(fileURL.pathExtension.lowercased()) else {
             throw .unsupportedBookFileFormat
-        }        
+        }
+        self.fileURL = fileURL
         self.title = fileURL.lastPathComponent
         self.data = try BookAttachment.parsedData(from: fileURL).base64EncodedString(options: [.lineLength76Characters])
         self.mimeType = BookAttachment.mimeType(for: fileURL.lastPathComponent)

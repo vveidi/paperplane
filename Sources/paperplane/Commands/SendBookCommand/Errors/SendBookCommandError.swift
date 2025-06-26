@@ -18,6 +18,7 @@ enum SendBookCommandError: LocalizedError {
     case exceededMaxAttachmentCount
     case configNotFound(error: Error)
     case parameterValidationFailed
+    case fileRemovalFailed(error: Error)
     
     var errorDescription: String? {
         switch self {
@@ -46,6 +47,8 @@ enum SendBookCommandError: LocalizedError {
             return "Failed to read config file: \(error.localizedDescription)"
         case .parameterValidationFailed:
             return "Validation failed. Please check all parameters."
+        case .fileRemovalFailed(let error):
+            return "Failed to remove book file: \(error.localizedDescription)"
         }
     }
 }
