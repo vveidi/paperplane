@@ -8,7 +8,6 @@
 import ArgumentParser
 import Foundation
 
-// TODO: Show errors if VPN is enabled
 // TODO: Remove msmtp dependency
 // TODO: Add command parameters validation
 
@@ -114,31 +113,45 @@ struct SendBookCommand: ParsableCommand {
     }
     
     private func sendMessage(_ message: String, to receiver: String) throws(SendBookCommandError) {
-        guard let messageData = message.data(using: .utf8) else {
+        let tempFile = try createTempFile(for: message)
+        defer {
+            try? FileManager.default.removeItem(at: tempFile)
+        }
+        guard let fileHandle = try? FileHandle(forReadingFrom: tempFile) else {
             throw .messageEncodingFailed
         }
         let process = Process()
-        let inputPipe = Pipe()
         let errorPipe = Pipe()
         process.executableURL = URL(filePath: "/opt/homebrew/bin/msmtp")
         process.arguments = ["--", receiver]
-        process.standardInput = inputPipe
+        process.standardInput = fileHandle
         process.standardError = errorPipe
         
         do {
             try process.run()
-            try inputPipe.fileHandleForWriting.write(contentsOf: messageData)
-            try inputPipe.fileHandleForWriting.close()
+            process.waitUntilExit()
         } catch {
             throw .processFailedToStart(error: error)
         }
-        process.waitUntilExit()
         
         let stderr = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
         
         if process.terminationStatus != 0 || !stderr.isEmpty {
             throw SendBookCommandError.processTerminated(code: Int(process.terminationStatus), description: stderr)
         }
+    }
+    
+    private func createTempFile(for message: String) throws(SendBookCommandError) -> URL {
+        guard let tempDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+            throw .messageEncodingFailed
+        }
+        let tempFile = tempDir.appending(path: UUID().uuidString + ".eml")
+        do {
+            try message.write(to: tempFile, atomically: true, encoding: .utf8)
+        } catch {
+            throw .messageEncodingFailed
+        }
+        return tempFile
     }
     
     private func removeAttachmentsAfterSend(_ attachments: [BookAttachment]) throws(SendBookCommandError) {

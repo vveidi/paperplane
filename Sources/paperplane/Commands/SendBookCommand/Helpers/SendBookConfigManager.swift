@@ -9,8 +9,10 @@ import Foundation
 
 struct SendBookConfigManager {
     
+    static let configURLPath = ".paperplane/paperplane.json"
+    
     static func load() -> SendBookConfig? {
-        let configURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".paperplane.json")
+        let configURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: configURLPath)
         guard let data = try? Data(contentsOf: configURL) else {
             return nil
         }
@@ -18,7 +20,7 @@ struct SendBookConfigManager {
     }
     
     static func save(_ config: SendBookConfig) {
-        let configURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".paperplane.json")
+        let configURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: configURLPath)
         guard let data = try? JSONEncoder().encode(config) else {
             return
         }
