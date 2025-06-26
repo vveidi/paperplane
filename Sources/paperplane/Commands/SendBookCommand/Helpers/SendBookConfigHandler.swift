@@ -9,7 +9,7 @@ import Foundation
 
 struct SendBookConfigHandler {
     
-    private static let configURLPath = ".paperplane/paperplane.json"
+    static let configURLPath = ".paperplane/paperplane.json"
     
     static func create(sender: String?, receiver: String?, path: String?) throws(SendBookCommandError) -> SendBookConfig {
         let configuration = SendBookConfigHandler.load()

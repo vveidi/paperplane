@@ -4,7 +4,7 @@ import ArgumentParser
 struct Paperplane: ParsableCommand {
     static var configuration: CommandConfiguration {
         CommandConfiguration(
-            commandName: "send-book",
+            commandName: "paperplane",
             abstract: "Sends a book file or folder as an email attachment.",
             discussion: """
                 Usage example:
@@ -15,9 +15,12 @@ struct Paperplane: ParsableCommand {
                   --receiver     Email address of the recipient.
                   --path         Path to the book file or folder.
                   --remove-after-send  Remove file or folder after sending.
+                  --verbose      Verbose mode.
 
                 Supported formats: mobi, azw, azw3, epub, pdf, and more.
-                """
+                """,
+            subcommands: [SendBookCommand.self],
+            defaultSubcommand: SendBookCommand.self
         )
     }
 }
