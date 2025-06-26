@@ -9,7 +9,6 @@ import ArgumentParser
 import Foundation
 
 // TODO: Show errors if VPN is enabled
-// TODO: Escape and encode attachment title (e.g. RFC 2047) if it contains non-ASCII or special characters
 // TODO: Remove msmtp dependency
 // TODO: Add command parameters validation
 
@@ -101,8 +100,8 @@ struct SendBookCommand: ParsableCommand {
         
         attachments.forEach { attachment in
             builder.add("--\(boundary)")
-            builder.add("Content-Type: \(attachment.mimeType); name=\"\(attachment.title)\"")
-            builder.add("Content-Disposition: attachment; filename=\"\(attachment.title)\"")
+            builder.add("Content-Type: \(attachment.mimeType); name=\"\(attachment.title.rfc2047Encoded())\"")
+            builder.add("Content-Disposition: attachment; filename=\"\(attachment.title.rfc2047Encoded())\"")
             builder.add("Content-Transfer-Encoding: base64")
             builder.addEmptyLine()
             builder.add(attachment.data)
@@ -150,5 +149,18 @@ struct SendBookCommand: ParsableCommand {
         } catch {
             throw .fileRemovalFailed(error: error)
         }
+    }
+}
+
+private extension String {
+    func rfc2047Encoded() -> String {
+        if canBeConverted(to: .ascii) {
+            return self
+        }
+        guard let utf8Data = data(using: .utf8) else {
+            return self
+        }
+        let base64EncodedString = utf8Data.base64EncodedString()
+        return "=?UTF-8?B?\(base64EncodedString)?="
     }
 }
