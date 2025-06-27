@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct SendBookConfig: Codable {
+struct SendBookConfig: Codable, Equatable {
     let sender: String
     let receiver: String
     let fileURL: URL

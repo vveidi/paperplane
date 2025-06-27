@@ -1,5 +1,5 @@
 //
-//  SendBookCommand.swift
+//  SendBook.swift
 //  paperplane
 //
 //  Created by Vadim on 18.06.2025.
@@ -10,7 +10,7 @@ import Foundation
 
 // TODO: Remove msmtp dependency
 
-struct SendBookCommand: ParsableCommand {
+struct SendBook: ParsableCommand {
     
     @Option(name: .shortAndLong, help: "Email address of the sender")
     var sender: String?
@@ -27,10 +27,19 @@ struct SendBookCommand: ParsableCommand {
     @Flag(help: "Verbose mode")
     var verbose: Bool = false
     
+    @Flag(help: "Debug mode")
+    var debug: Bool = false
+    
     func run() throws(SendBookCommandError) {
-        let configuration = try SendBookConfigHandler.create(sender: sender, receiver: receiver, path: path)
+        let userInput = SendBookUserInput(sender: sender, receiver: receiver, path: path)
+        let oldConfiguration = SendBookConfigHandler.load()
+        if verbose, let oldConfiguration {
+            print("🎯 Configuration loaded: \(oldConfiguration)")
+        }
+        
+        let configuration = try SendBookConfigHandler.merge(configuration: oldConfiguration, userInput: userInput)
         if verbose {
-            print("🎯 Current configuration: \(configuration)")
+            print("🎯 Configuration merged with user input: \(configuration)")
         }
         
         let attachments = try SendBookAttachmentsHandler.createAttachments(path: configuration.fileURL)
@@ -39,7 +48,9 @@ struct SendBookCommand: ParsableCommand {
         }
         
         let message = SendBookMessageBuilder.buildMessage(with: attachments, from: configuration.sender, to: configuration.receiver)
-        try SendBookMessageSender.send(message, to: configuration.receiver)
+        if !debug {
+            try SendBookMessageSender.send(message, to: configuration.receiver)
+        }
         print("✈️ The mail has been sent successfully")
         
         if removeAfterSend {
@@ -49,9 +60,13 @@ struct SendBookCommand: ParsableCommand {
             }
         }
         
-        SendBookConfigHandler.save(configuration)
+        try SendBookConfigHandler.save(configuration)
         if verbose {
-            print("🎯 Configuration file has been saved to \(SendBookConfigHandler.configURLPath). New configuration: \(configuration)")
+            if oldConfiguration == configuration {
+                print("🎯 No changes in the configuration. Skipped configuration file saving")
+            } else {
+                print("🎯 Configuration file has been saved to \(SendBookConfigHandler.configURL). New configuration: \(configuration)")
+            }
         }
     }
 }

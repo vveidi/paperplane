@@ -19,6 +19,7 @@ enum SendBookCommandError: LocalizedError {
     case configNotFound(error: Error)
     case parameterValidationFailed
     case fileRemovalFailed(error: Error)
+    case configSavingFailed(error: Error)
     
     var errorDescription: String? {
         switch self {
@@ -49,6 +50,8 @@ enum SendBookCommandError: LocalizedError {
             return "Failed: validation failed. Please check all parameters."
         case .fileRemovalFailed(let error):
             return "Failed to remove book file: \(error.localizedDescription)"
+        case .configSavingFailed(let error):
+            return "Failed to save config file: \(error)"
         }
     }
 }
