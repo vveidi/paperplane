@@ -12,7 +12,6 @@ struct SendBookConfigHandler {
     static let configURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".paperplane/paperplane.json")
     
     static func merge(configuration: SendBookConfig?, userInput: SendBookUserInput) throws(SendBookCommandError) -> SendBookConfig {
-        let configuration = SendBookConfigHandler.load()
         guard let sender = userInput.sender ?? configuration?.sender,
               let receiver = userInput.receiver ?? configuration?.receiver,
               let path = userInput.path ?? configuration?.fileURL.path else {
