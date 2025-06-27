@@ -23,7 +23,4 @@ struct BookAttachment {
     static let supportedFileTypes: Set<String> = [
         "pdf", "doc", "docx", "txt", "rtf", "htm", "html", "png", "gif", "jpg", "jpeg", "bmp", "epub"
     ]
-    
-    static let maximumAttachmentsSize = 50 * 1024 * 1024
-    static let maximumAttachmentsCount = 25
 }
