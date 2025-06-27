@@ -16,15 +16,6 @@ struct SendBookAttachmentsHandler {
         guard !attachments.isEmpty else {
             throw .failedToCreateAttachments
         }
-        guard attachments.count <= BookAttachment.maximumAttachmentsCount else {
-            throw .exceededMaxAttachmentCount
-        }
-        let base64Length = attachments.reduce(into: 0) { partialResult, attachment in
-            partialResult += ((attachment.data.count + 2) / 3) * 4
-        }
-        guard base64Length <= BookAttachment.maximumAttachmentsSize else {
-            throw .exceededMaxAttachmentSize
-        }
         return attachments
     }
     

@@ -6,9 +6,8 @@
 //
 
 import ArgumentParser
+import Dispatch
 import Foundation
-
-// TODO: Remove msmtp dependency
 
 struct SendBookCommand: ParsableCommand {
     
@@ -51,11 +50,20 @@ struct SendBookCommand: ParsableCommand {
             print("🎯 Attachments files: \(attachments.map(\.title))")
         }
         
-        let message = SendBookMessageBuilder.buildMessage(with: attachments, from: configuration.sender, to: configuration.receiver)
         if !debug {
-            try SendBookMessageSender.send(message, to: configuration.receiver)
+            let semaphore = DispatchSemaphore(value: 0)
+            SendBookMessageSender.send(configuration: configuration, attachments: attachments) { error in
+                if error == nil {
+                    print("🛫 The mail has been sent successfully")
+                } else {
+                    print("❌ An error occurred while sending the mail: \(error?.localizedDescription ?? "")")
+                }
+                semaphore.signal()
+            }
+            semaphore.wait()
+        } else {
+            print("🛫 Debug mode is on. The mail would have been sent successfully")
         }
-        print("✈️ The mail has been sent successfully")
         
         if removeAfterSend {
             try SendBookAttachmentsHandler.removeAttachmentsAfterSend(attachments)
