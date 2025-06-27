@@ -10,8 +10,11 @@ import Foundation
 struct SendBookAttachmentsHandler {
     
     static func createAttachments(path: URL) throws (SendBookCommandError) -> [BookAttachment] {
-        let attachments = try generateFileURLs(for: path).map { (fileURL) throws(SendBookCommandError) in
-            return try BookAttachment(fileURL: fileURL)
+        let attachments = generateFileURLs(for: path).compactMap { fileURL in
+            return try? BookAttachment(fileURL: fileURL)
+        }
+        guard !attachments.isEmpty else {
+            throw .failedToCreateAttachments
         }
         guard attachments.count <= BookAttachment.maximumAttachmentsCount else {
             throw .exceededMaxAttachmentCount

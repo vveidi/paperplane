@@ -20,8 +20,8 @@ struct Paperplane: ParsableCommand {
 
                 Supported formats: pdf, doc, docx, txt, rtf, epub and more.
                 """,
-            subcommands: [SendBook.self],
-            defaultSubcommand: SendBook.self
+            subcommands: [SendBookCommand.self],
+            defaultSubcommand: SendBookCommand.self
         )
     }
 }

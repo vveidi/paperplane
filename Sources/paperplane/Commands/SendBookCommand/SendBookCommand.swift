@@ -1,5 +1,5 @@
 //
-//  SendBook.swift
+//  SendBookCommand.swift
 //  paperplane
 //
 //  Created by Vadim on 18.06.2025.
@@ -10,7 +10,11 @@ import Foundation
 
 // TODO: Remove msmtp dependency
 
-struct SendBook: ParsableCommand {
+struct SendBookCommand: ParsableCommand {
+    
+    static var configuration: CommandConfiguration {
+        CommandConfiguration(commandName: "send-book")
+    }
     
     @Option(name: .shortAndLong, help: "Email address of the sender")
     var sender: String?
