@@ -11,7 +11,19 @@ import Foundation
 struct SMTPConfigCommand: ParsableCommand {
     
     static var configuration: CommandConfiguration {
-        CommandConfiguration(commandName: "config")
+        CommandConfiguration(
+            commandName: "config",
+            abstract: "Configure SMTP settings for sending emails.",
+            discussion: """
+            Options and flags:
+                --init           Create a new SMTP configuration file (interactive)
+                --show           Display the current SMTP configuration
+
+            Examples:
+              config --init      Start interactive setup of your SMTP config
+              config --show      Display the current SMTP config
+            """
+        )
     }
     
     @Flag(help: "Create configuration file")
@@ -42,7 +54,7 @@ struct SMTPConfigCommand: ParsableCommand {
         }
         
         print("Enter password:")
-        let password = String(cString: getpass("Введите пароль: "))
+        let password = String(cString: getpass("Enter password: "))
         guard !password.isEmpty else {
             throw .invalidSMTPConfigParameter("password")
         }
@@ -80,3 +92,4 @@ struct SMTPConfigCommand: ParsableCommand {
         print(config)
     }
 }
+

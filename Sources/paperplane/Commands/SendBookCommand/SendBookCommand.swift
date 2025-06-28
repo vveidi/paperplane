@@ -12,7 +12,23 @@ import Foundation
 struct SendBookCommand: ParsableCommand {
     
     static var configuration: CommandConfiguration {
-        CommandConfiguration(commandName: "send-book")
+        CommandConfiguration(
+            commandName: "send-book",
+            abstract: "Send a book file or folder as an email attachment.",
+            discussion: """
+            Options and flags:
+              -s, --sender <sender>          Email address of the sender
+              -r, --receiver <receiver>      Email address of the receiver
+              -p, --path <path>              Path to the book file or the folder
+                  --remove-after-send        Remove file or folder after sending
+                  --verbose                  Verbose mode (detailed output)
+                  --debug                    Debug mode (simulate sending, does NOT send real emails)
+
+            Examples:
+              send-book -s you@email.com -r kindle@kindle.com -p /path/to/book.epub
+              send-book --sender=me@mail.com --receiver=kindle@kindle.com --path=/book.mobi --remove-after-send
+            """
+        )
     }
     
     @Option(name: .shortAndLong, help: "Email address of the sender")

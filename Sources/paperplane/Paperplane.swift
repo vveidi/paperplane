@@ -8,7 +8,7 @@ struct Paperplane: ParsableCommand {
             abstract: "Sends a book file or folder as an email attachment.",
             discussion: """
                 Usage example:
-                  paperplane send-book --sender you@email.com --receiver kindle@kindle.com --path /path/to/book.mobi
+                  paperplane send-book --sender you@email.com --receiver kindle@kindle.com --path /path/to/book.epub
 
                 Parameters:
                   --sender              Email address of the sender.
