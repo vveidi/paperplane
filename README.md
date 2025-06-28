@@ -1,4 +1,4 @@
-# 📦 Paperplane
+# 🛫 Paperplane
 
 **Paperplane** is a Swift command-line utility to send book files or folders as email attachments using your configured SMTP server. It is especially handy for sending eBooks to devices such as e-readers via email.
 
@@ -22,16 +22,12 @@ cd paperplane
 swift build -c release
 ```
 
----
-
 ## Quick Start
 
 ```sh
 paperplane config --init
 paperplane send-book --sender you@email.com --receiver kindle@kindle.com --path /path/to/book.epub
 ```
-
----
 
 ## SMTP Configuration
 
