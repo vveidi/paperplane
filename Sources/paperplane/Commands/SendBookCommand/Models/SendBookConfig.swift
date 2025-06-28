@@ -8,6 +8,9 @@
 import Foundation
 
 struct SendBookConfig: Codable, Equatable {
+    
+    static let path = Path.settingsDirectory.appending(path: "send_book.json")
+    
     let sender: String
     let receiver: String
     let fileURL: URL

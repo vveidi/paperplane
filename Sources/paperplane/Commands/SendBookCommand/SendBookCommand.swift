@@ -77,7 +77,7 @@ struct SendBookCommand: ParsableCommand {
             if oldConfiguration == configuration {
                 print("🎯 No changes in the configuration. Skipped configuration file saving")
             } else {
-                print("🎯 Configuration file has been saved to \(SendBookConfigHandler.configURL). New configuration: \(configuration)")
+                print("🎯 Configuration file has been saved to \(SendBookConfig.path). New configuration: \(configuration)")
             }
         }
     }

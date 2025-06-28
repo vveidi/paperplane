@@ -20,20 +20,18 @@ struct SendBookMessageSender {
             text: "This mail was sent via Swift",
             attachments: attachments
         )
-        guard let dict = NSDictionary(contentsOfFile: "Secrets.plist"),
-              let hostname = dict["hostname"] as? String,
-              let email = dict["email"] as? String,
-              let password = dict["password"] as? String,
-              let port = dict["port"] as? Int32 else {
-            completion(SendBookCommandError.failedToParseSecretsFile)
-            return
+        do {
+            let data = try Data(contentsOf: SMTPConfig.path)
+            let config = try JSONDecoder().decode(SMTPConfig.self, from: data)
+            let smtp = SMTP(
+                hostname: config.hostname,
+                email: config.mail,
+                password: config.password,
+                port: config.port
+            )
+            smtp.send(mail, completion: completion)
+        } catch {
+            completion(SendBookCommandError.failedToParseSMTPConfigFile)
         }
-        let smtp = SMTP(
-            hostname: hostname,
-            email: email,
-            password: password,
-            port: port
-        )
-        smtp.send(mail, completion: completion)
     }
 }

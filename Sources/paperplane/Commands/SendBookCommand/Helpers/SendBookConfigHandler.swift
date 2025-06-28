@@ -9,8 +9,6 @@ import Foundation
 
 struct SendBookConfigHandler {
     
-    static let configURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: ".paperplane/paperplane.json")
-    
     static func merge(configuration: SendBookConfig?, userInput: SendBookUserInput) throws(SendBookCommandError) -> SendBookConfig {
         guard let sender = userInput.sender ?? configuration?.sender,
               let receiver = userInput.receiver ?? configuration?.receiver,
@@ -29,7 +27,7 @@ struct SendBookConfigHandler {
     }
     
     static func load() -> SendBookConfig? {
-        guard let data = try? Data(contentsOf: configURL) else {
+        guard let data = try? Data(contentsOf: SendBookConfig.path) else {
             return nil
         }
         return try? JSONDecoder().decode(SendBookConfig.self, from: data)
@@ -37,10 +35,9 @@ struct SendBookConfigHandler {
     
     static func save(_ config: SendBookConfig) throws(SendBookCommandError) {
         do {
-            let configDirectory = configURL.deletingLastPathComponent()
-            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+            try? FileManager.default.createDirectory(at: Path.settingsDirectory, withIntermediateDirectories: true)
             let data = try JSONEncoder().encode(config)
-            try data.write(to: configURL)
+            try data.write(to: SendBookConfig.path)
         } catch {
             throw .configSavingFailed(error: error)
         }
