@@ -17,9 +17,14 @@ struct SMTPConfigCommand: ParsableCommand {
     @Flag(help: "Create configuration file")
     var `init`: Bool = false
     
+    @Flag(help: "Show configuration")
+    var show: Bool = false
+    
     func run() throws(SMTPConfigCommandError) {
         if `init` {
             try createSMTPConfigFile()
+        } else if show {
+            try showSMTPConfig()
         }
     }
     
@@ -59,5 +64,19 @@ struct SMTPConfigCommand: ParsableCommand {
         } catch {
             throw .failedToCreateConfig(error: error)
         }
+    }
+    
+    private func showSMTPConfig() throws(SMTPConfigCommandError) {
+        guard let data = try? Data(contentsOf: SMTPConfig.path),
+              let jsonData = try? JSONSerialization.jsonObject(with: data),
+              let jsonDataPrettyPrinted = try? JSONSerialization.data(
+                withJSONObject: jsonData,
+                options: [.prettyPrinted, .withoutEscapingSlashes]
+              ),
+              let config = String(data: jsonDataPrettyPrinted, encoding: .utf8)
+        else {
+            throw .failedToParseSMTPConfigFile
+        }
+        print(config)
     }
 }
