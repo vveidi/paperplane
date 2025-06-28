@@ -10,10 +10,14 @@ import SwiftSMTP
 
 struct SendBookMessageSender {
     
-    static func send(configuration: SendBookConfig, attachments: [BookAttachment], completion: @escaping ((Error)?) -> Void) {
+    static func send(
+        configuration: SendBookConfig,
+        attachments: [BookAttachment],
+        completion: @escaping ((Error)?) -> Void
+    ) {
         let sender = Mail.User(email: configuration.sender)
         let receiver = Mail.User(email: configuration.receiver)
-        let attachments = attachments.map({ Attachment(filePath: $0.fileURL.absoluteString) })
+        let attachments = attachments.map({ Attachment(filePath: $0.fileURL.path()) })
         let mail = Mail(
             from: sender,
             to: [receiver],
