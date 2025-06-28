@@ -47,7 +47,7 @@ struct SendBookCommand: ParsableCommand {
         
         let attachments = try SendBookAttachmentsHandler.createAttachments(path: configuration.fileURL)
         if verbose {
-            print("🎯 Attachments files: \(attachments.map(\.title))")
+            print("🎯 Attachments files: \(attachments.map(\.fileURL))")
         }
         
         if !debug {

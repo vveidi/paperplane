@@ -17,7 +17,7 @@ struct SendBookMessageSender {
     ) {
         let sender = Mail.User(email: configuration.sender)
         let receiver = Mail.User(email: configuration.receiver)
-        let attachments = attachments.map({ Attachment(filePath: $0.fileURL.path()) })
+        let attachments = attachments.map({ Attachment(filePath: $0.fileURL.path(), name: $0.title) })
         let mail = Mail(
             from: sender,
             to: [receiver],
