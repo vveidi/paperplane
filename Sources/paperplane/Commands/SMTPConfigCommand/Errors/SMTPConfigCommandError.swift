@@ -9,11 +9,14 @@ import Foundation
 
 enum SMTPConfigCommandError: LocalizedError {
     case failedToCreateConfig(error: Error)
+    case invalidSMTPConfigParameter(String)
     
     var errorDescription: String? {
         switch self {
         case .failedToCreateConfig(let error):
             return "Failed to create config: \(error)"
+        case .invalidSMTPConfigParameter(let parameter):
+            return "Invalid SMTP config parameter: \(parameter)"
         }
     }
 }

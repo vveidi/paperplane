@@ -27,29 +27,25 @@ struct SMTPConfigCommand: ParsableCommand {
         print("Enter hostname:")
         let hostname = readLine()
         guard let hostname, !hostname.isEmpty else {
-            print("Invalid hostname")
-            return
+            throw .invalidSMTPConfigParameter("hostname")
         }
         
         print("Enter mail:")
         let mail = readLine()
         guard let mail, !mail.isEmpty else {
-            print("Invalid mail")
-            return
+            throw .invalidSMTPConfigParameter("mail")
         }
         
         print("Enter password:")
         let password = String(cString: getpass("Введите пароль: "))
         guard !password.isEmpty else {
-            print("Invalid password")
-            return
+            throw .invalidSMTPConfigParameter("password")
         }
         
         print("Enter SMTP port:")
         let rawPort = readLine()
         guard let rawPort, !rawPort.isEmpty, let port = Int32(rawPort) else {
-            print("Invalid SMTP port")
-            return
+            throw .invalidSMTPConfigParameter("SMTP port")
         }
         
         let config = SMTPConfig(hostname: hostname, mail: mail, password: password, port: port)

@@ -52,17 +52,21 @@ struct SendBookCommand: ParsableCommand {
         
         if !debug {
             let semaphore = DispatchSemaphore(value: 0)
+            var sendError: Error?
+            
             SendBookMessageSender.send(configuration: configuration, attachments: attachments) { error in
-                if error == nil {
-                    print("🛫 The mail has been sent successfully")
-                } else {
-                    print("❌ An error occurred while sending the mail: \(error?.localizedDescription ?? "")")
-                }
+                sendError = error
                 semaphore.signal()
             }
             semaphore.wait()
+            
+            if let sendError {
+                throw .failedToSendEmail(error: sendError)
+            } else {
+                print("🛫 The mail has been sent successfully")
+            }
         } else {
-            print("🛫 Debug mode is on. The mail would have been sent successfully")
+            print("🛫 Debug mode is on. The mail would have been sent")
         }
         
         if removeAfterSend {
