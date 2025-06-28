@@ -19,9 +19,6 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 .product(name: "SwiftSMTP", package: "swift-smtp")
             ],
-            resources: [
-                .copy("Secrets.plist")
-            ],
         ),
     ]
 )

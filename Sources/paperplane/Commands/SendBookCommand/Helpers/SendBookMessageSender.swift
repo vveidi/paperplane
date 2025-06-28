@@ -20,7 +20,7 @@ struct SendBookMessageSender {
             text: "This mail was sent via Swift",
             attachments: attachments
         )
-        guard let dict = NSDictionary(contentsOfFile: "Sources/paperplane/Secrets.plist"),
+        guard let dict = NSDictionary(contentsOfFile: "Secrets.plist"),
               let hostname = dict["hostname"] as? String,
               let email = dict["email"] as? String,
               let password = dict["password"] as? String,
