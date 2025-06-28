@@ -23,10 +23,12 @@ struct SendBookCommand: ParsableCommand {
                   --remove-after-send        Remove file or folder after sending
                   --verbose                  Verbose mode (detailed output)
                   --debug                    Debug mode (simulate sending, does NOT send real emails)
+                  --config                   Show current configuration
 
             Examples:
               send-book -s you@email.com -r kindle@kindle.com -p /path/to/book.epub
               send-book --sender=me@mail.com --receiver=kindle@kindle.com --path=/book.mobi --remove-after-send
+              send-book --config
             """
         )
     }
@@ -49,7 +51,35 @@ struct SendBookCommand: ParsableCommand {
     @Flag(help: "Debug mode")
     var debug: Bool = false
     
+    @Flag(help: "Show configuration")
+    var config: Bool = false
+    
     func run() throws(SendBookCommandError) {
+        if config {
+            if sender != nil || receiver != nil || path != nil || removeAfterSend || verbose || debug {
+                print("Configuration options are not available in config mode")
+            }
+            try showConfig()
+        } else {
+            try sendBook()
+        }
+    }
+    
+    private func showConfig() throws(SendBookCommandError) {
+        guard let data = try? Data(contentsOf: SendBookConfig.path),
+              let jsonData = try? JSONSerialization.jsonObject(with: data),
+              let jsonDataPrettyPrinted = try? JSONSerialization.data(
+                withJSONObject: jsonData,
+                options: [.prettyPrinted, .withoutEscapingSlashes]
+              ),
+              let config = String(data: jsonDataPrettyPrinted, encoding: .utf8)
+        else {
+            throw .failedToParseSendBookConfigFile
+        }
+        print(config)
+    }
+    
+    private func sendBook() throws(SendBookCommandError) {
         let userInput = SendBookUserInput(sender: sender, receiver: receiver, path: path)
         let oldConfiguration = SendBookConfigHandler.load()
         if verbose, let oldConfiguration {

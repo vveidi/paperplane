@@ -18,8 +18,10 @@ struct BookAttachment {
         guard BookAttachment.supportedFileTypes.contains(fileURL.pathExtension.lowercased()) else {
             throw .unsupportedBookFileFormat
         }
+        let title = BookAttachment.extractTitle(from: fileURL)
+        
         self.fileURL = fileURL
-        self.title = BookAttachment.extractTitle(from: fileURL) ?? fileURL.lastPathComponent
+        self.title = title?.appending(".\(fileURL.pathExtension.lowercased())") ?? fileURL.lastPathComponent
     }
     
     static let supportedFileTypes: Set<String> = [

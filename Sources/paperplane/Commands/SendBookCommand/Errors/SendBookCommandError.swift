@@ -16,6 +16,7 @@ enum SendBookCommandError: LocalizedError {
     case failedToCreateAttachments
     case failedToSendEmail(error: Error)
     case failedToParseSMTPConfigFile
+    case failedToParseSendBookConfigFile
     
     var errorDescription: String? {
         switch self {
@@ -36,6 +37,8 @@ enum SendBookCommandError: LocalizedError {
             return "Failed to send email: \(error)"
         case .failedToParseSMTPConfigFile:
             return "Failed to parse SMTP config file."
+        case .failedToParseSendBookConfigFile:
+            return "Failed to parse send-book config file."
         }
     }
 }

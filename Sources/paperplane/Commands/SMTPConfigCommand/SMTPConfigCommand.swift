@@ -12,7 +12,7 @@ struct SMTPConfigCommand: ParsableCommand {
     
     static var configuration: CommandConfiguration {
         CommandConfiguration(
-            commandName: "config",
+            commandName: "smtp-config",
             abstract: "Configure SMTP settings for sending emails.",
             discussion: """
             Options and flags:
@@ -20,8 +20,8 @@ struct SMTPConfigCommand: ParsableCommand {
                 --show           Display the current SMTP configuration
 
             Examples:
-              config --init      Start interactive setup of your SMTP config
-              config --show      Display the current SMTP config
+              smtp-config --init      Start interactive setup of your SMTP config
+              smtp-config --show      Display the current SMTP config
             """
         )
     }
@@ -34,13 +34,13 @@ struct SMTPConfigCommand: ParsableCommand {
     
     func run() throws(SMTPConfigCommandError) {
         if `init` {
-            try createSMTPConfigFile()
+            try createConfig()
         } else if show {
-            try showSMTPConfig()
+            try showConfig()
         }
     }
     
-    private func createSMTPConfigFile() throws(SMTPConfigCommandError) {
+    private func createConfig() throws(SMTPConfigCommandError) {
         print("Enter hostname:")
         let hostname = readLine()
         guard let hostname, !hostname.isEmpty else {
@@ -78,7 +78,7 @@ struct SMTPConfigCommand: ParsableCommand {
         }
     }
     
-    private func showSMTPConfig() throws(SMTPConfigCommandError) {
+    private func showConfig() throws(SMTPConfigCommandError) {
         guard let data = try? Data(contentsOf: SMTPConfig.path),
               let jsonData = try? JSONSerialization.jsonObject(with: data),
               let jsonDataPrettyPrinted = try? JSONSerialization.data(
