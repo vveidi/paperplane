@@ -92,7 +92,14 @@ struct SendBookCommand: ParsableCommand {
         }
         
         let attachments = try SendBookAttachmentsHandler.createAttachments(path: configuration.fileURL)
-        print("🎯 Attachments files:\n", list(of: attachments))
+        print("""
+            \nThe mail will be sent 
+            from: \(configuration.sender) 
+            to: \(configuration.receiver)
+            
+            The attachments are:
+            \(attachments.orderedList)
+            """)
         
         print("\nConfirm sending the email? (y/N): ", terminator: "")
         let confirmation = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
@@ -100,10 +107,11 @@ struct SendBookCommand: ParsableCommand {
             throw .sendingExplicitlyCancelled
         }
         
+        print("Sending mail...")
+        
         if !debug {
             let semaphore = DispatchSemaphore(value: 0)
             var sendError: Error?
-            
             SendBookMessageSender.send(configuration: configuration, attachments: attachments) { error in
                 sendError = error
                 semaphore.signal()
@@ -116,6 +124,7 @@ struct SendBookCommand: ParsableCommand {
                 print("🛫 The mail has been sent successfully")
             }
         } else {
+            Thread.sleep(forTimeInterval: 1)
             print("🛫 Debug mode is on. The mail would have been sent")
         }
         
@@ -135,11 +144,13 @@ struct SendBookCommand: ParsableCommand {
             }
         }
     }
-    
-    private func list(of attachments: [BookAttachment]) -> String {
+}
+
+private extension Array where Element == BookAttachment {
+    var orderedList: String {
         var result: String = ""
-        for (index, attachment) in attachments.enumerated() {
-            if index != attachments.endIndex - 1 {
+        for (index, attachment) in enumerated() {
+            if index != endIndex - 1 {
                 result.append("\(index + 1). \(attachment.title)\n")
             } else {
                 result.append("\(index + 1). \(attachment.title)")
