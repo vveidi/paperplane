@@ -20,6 +20,6 @@ extension SendBookConfig {
     init(sender: String, receiver: String, path: String) {
         self.sender = sender
         self.receiver = receiver
-        self.fileURL = URL(filePath: path)
+        self.fileURL = URL(fileURLWithPath: path)
     }
 }
