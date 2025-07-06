@@ -17,28 +17,31 @@ enum SendBookCommandError: LocalizedError {
     case failedToSendEmail(error: Error)
     case failedToParseSMTPConfigFile
     case failedToParseSendBookConfigFile
+    case sendingExplicitlyCancelled
     
     var errorDescription: String? {
         switch self {
         case .invalidEmailAddress:
-            return "Invalid sender or receiver email address. Please check both addresses."
+            return "❌ Invalid sender or receiver email address. Please check both addresses."
         case .unsupportedBookFileFormat:
             let supportedFormats = BookAttachment.supportedFileTypes.joined(separator: ", ")
-            return "Failed: Unsupported book file format. Please, use one of the supported formats: \(supportedFormats)."
+            return "❌ Unsupported book file format. Please, use one of the supported formats: \(supportedFormats)."
         case .parameterValidationFailed:
-            return "Failed: validation failed. Please check all parameters."
+            return "❌ Validation failed. Please check all parameters."
         case .fileRemovalFailed(let error):
-            return "Failed to remove book file: \(error.localizedDescription)"
+            return "❌ Failed to remove book file: \(error.localizedDescription)"
         case .configSavingFailed(let error):
-            return "Failed to save config file: \(error)"
+            return "❌ Failed to save config file: \(error)"
         case .failedToCreateAttachments:
-            return "Failed to create attachments."
+            return "❌ Failed to create attachments."
         case .failedToSendEmail(let error):
-            return "Failed to send email: \(error)"
+            return "❌ Failed to send email: \(error)"
         case .failedToParseSMTPConfigFile:
-            return "Failed to parse SMTP config file."
+            return "❌ Failed to parse SMTP config file."
         case .failedToParseSendBookConfigFile:
-            return "Failed to parse send-book config file."
+            return "❌ Failed to parse send-book config file."
+        case .sendingExplicitlyCancelled:
+            return "❌ Sending was cancelled by the user."
         }
     }
 }

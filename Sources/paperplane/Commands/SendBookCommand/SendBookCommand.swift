@@ -92,8 +92,12 @@ struct SendBookCommand: ParsableCommand {
         }
         
         let attachments = try SendBookAttachmentsHandler.createAttachments(path: configuration.fileURL)
-        if verbose {
-            print("🎯 Attachments files: \(attachments.map(\.fileURL))")
+        print("🎯 Attachments files:\n", list(of: attachments))
+        
+        print("\nConfirm sending the email? (y/N): ", terminator: "")
+        let confirmation = readLine()?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard confirmation == "y" || confirmation == "yes" else {
+            throw .sendingExplicitlyCancelled
         }
         
         if !debug {
@@ -130,5 +134,17 @@ struct SendBookCommand: ParsableCommand {
                 print("🎯 Configuration file has been saved to \(SendBookConfig.path). New configuration: \(configuration)")
             }
         }
+    }
+    
+    private func list(of attachments: [BookAttachment]) -> String {
+        var result: String = ""
+        for (index, attachment) in attachments.enumerated() {
+            if index != attachments.endIndex - 1 {
+                result.append("\(index + 1). \(attachment.title)\n")
+            } else {
+                result.append("\(index + 1). \(attachment.title)")
+            }
+        }
+        return result
     }
 }
