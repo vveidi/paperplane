@@ -23,7 +23,7 @@ struct SendBookConfigHandler {
               FileManager.default.fileExists(atPath: path) else {
             throw .parameterValidationFailed
         }
-        return SendBookConfig(sender: sender, receiver: receiver, path: path)
+        return SendBookConfig(sender: sender, receiver: receiver, path: path, isDirectory: isDirectory(path))
     }
     
     static func load() -> SendBookConfig? {
@@ -35,11 +35,22 @@ struct SendBookConfigHandler {
     
     static func save(_ config: SendBookConfig) throws(SendBookCommandError) {
         do {
-            try? FileManager.default.createDirectory(at: Path.settingsDirectory, withIntermediateDirectories: true)
-            let data = try JSONEncoder().encode(config)
-            try data.write(to: SendBookConfig.path)
+            if FileManager.default.fileExists(atPath: Path.settingsDirectory.path()) {
+                let data = try JSONEncoder().encode(config)
+                try data.write(to: SendBookConfig.path)
+            } else {
+                try FileManager.default.createDirectory(at: Path.settingsDirectory, withIntermediateDirectories: true)
+                let data = try JSONEncoder().encode(config)
+                try data.write(to: SendBookConfig.path)
+            }
         } catch {
             throw .configSavingFailed(error: error)
         }
+    }
+    
+    private static func isDirectory(_ path: String) -> Bool {
+        var isDirectory: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
+        return exists && isDirectory.boolValue
     }
 }

@@ -17,9 +17,9 @@ struct SendBookConfig: Codable, Equatable {
 }
 
 extension SendBookConfig {
-    init(sender: String, receiver: String, path: String) {
+    init(sender: String, receiver: String, path: String, isDirectory: Bool) {
         self.sender = sender
         self.receiver = receiver
-        self.fileURL = URL(fileURLWithPath: path)
+        self.fileURL = URL(fileURLWithPath: path, isDirectory: isDirectory)
     }
 }
